@@ -1,4 +1,7 @@
-const http = require('http')
+//tehtävä 3.1-3.2
+
+const express = require('express')
+const app = express()
 
 
 let persons = [
@@ -20,15 +23,25 @@ let persons = [
       { 
         id: 4,
         name: "Mary Poppendieck", 
-        number: "39-23-6423122"
+        number: "39-23-64231222222"
       }
 ]
 
-const app = http.createServer((request, response) => {
-    response.writeHead(200, { 'Content-Type': 'application/json' })
-    response.end(JSON.stringify(persons))
+app.get('/api/persons', (request, response) => {
+    response.json(persons)
 })
 
+app.get('/info', (request, response) => {
+    const number = persons.length;
+    const dateTime = new Date()
+    response.send(
+        `<div> 
+        <p> Phonebook has info for ${number} people </p>
+        ${dateTime}
+        </div>`)
+    })
+
 const PORT = 3001
-app.listen(PORT)
+app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`)
+})
