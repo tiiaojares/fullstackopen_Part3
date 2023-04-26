@@ -6,6 +6,7 @@ const morgan = require('morgan');
 
 
 const app = express();
+app.use(express.static('build'));
 
 // tehtävä 3.7 
 // tulostaa konsolille seuraavat tiedot:
@@ -27,6 +28,9 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :i
 morgan.token('info', function(req, res) {
   return JSON.stringify(req.body);
 });
+
+// post menetelmää varten tarvitaan json-parser:
+app.use(express.json())
 
 
 let persons = [
