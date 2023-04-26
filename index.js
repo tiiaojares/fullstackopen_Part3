@@ -1,9 +1,11 @@
 
 
-const express = require('express')
-const morgan = require('morgan')
+const express = require('express');
+const morgan = require('morgan');
 
-const app = express()
+
+
+const app = express();
 
 // tehtävä 3.7 
 // tulostaa konsolille seuraavat tiedot:
@@ -12,7 +14,10 @@ const app = express()
 
 //app.use(morgan('tiny'))
 
-
+//mahdollistaa että frontti voi käyttää backendin dataa
+//"npm install cors" backend repositoryssa
+const cors = require('cors');
+app.use(cors());
 
 
 // tehtävät 3.8: luodaan oma token
@@ -21,7 +26,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :i
 
 morgan.token('info', function(req, res) {
   return JSON.stringify(req.body);
-})
+});
 
 
 let persons = [
@@ -126,7 +131,7 @@ app.post('/api/persons', ((request, response) => {
 
 
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`)
 })
