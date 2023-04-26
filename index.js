@@ -1,7 +1,20 @@
-//tehtävä 3.3-3.6
+
 
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
+
+// tehtävä 3.7 
+// tulostaa konsolille seuraavat tiedot:
+// :method :url :status :res[content-length] - :response-time ms
+// huom! installoitava "npm install morgan"
+
+app.use(morgan('tiny'))
+
+morgan.token('host', function(req, res) {
+  return req.hostname;
+})
 
 
 let persons = [
@@ -103,6 +116,8 @@ app.post('/api/persons', ((request, response) => {
 
   response.json(person)
 }))
+
+
 
 const PORT = 3001
 app.listen(PORT, () => {
