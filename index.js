@@ -10,10 +10,17 @@ const app = express()
 // :method :url :status :res[content-length] - :response-time ms
 // huom! installoitava "npm install morgan"
 
-app.use(morgan('tiny'))
+//app.use(morgan('tiny'))
 
-morgan.token('host', function(req, res) {
-  return req.hostname;
+
+
+
+// tehtävät 3.8: luodaan oma token
+
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :info'))
+
+morgan.token('info', function(req, res) {
+  return JSON.stringify(req.body);
 })
 
 
