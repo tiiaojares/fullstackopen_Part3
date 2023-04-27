@@ -2,11 +2,14 @@
 
 const express = require('express');
 const morgan = require('morgan');
-
+//mahdollistaa että frontti voi käyttää backendin dataa
+//"npm install cors" backend repositoryssa
+const cors = require('cors');
 
 
 const app = express();
 app.use(express.static('build'));
+app.use(cors());
 
 // tehtävä 3.7 
 // tulostaa konsolille seuraavat tiedot:
@@ -14,11 +17,6 @@ app.use(express.static('build'));
 // huom! installoitava "npm install morgan"
 
 //app.use(morgan('tiny'))
-
-//mahdollistaa että frontti voi käyttää backendin dataa
-//"npm install cors" backend repositoryssa
-const cors = require('cors');
-app.use(cors());
 
 
 // tehtävät 3.8: luodaan oma token
