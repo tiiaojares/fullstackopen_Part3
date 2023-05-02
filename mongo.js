@@ -15,10 +15,24 @@ const url =
 mongoose.set('strictQuery',false)
 mongoose.connect(url)
 
+//määritellään schema, joka kuvaa tietokannan taulujen ja kenttien rakennetta
+
 const personSchema = new mongoose.Schema({
   name: String,
   number: String,
 })
+
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
+})
+
+// "Model" viittaa sovelluksen sisäiseen käyttöön tarkoitettuun objektiin, 
+//joka vastaa tietokannan "scheman" rakennetta 
+//ja johon tallennetaan tietokannasta haetut tiedot.
 
 const Person = mongoose.model('Person', personSchema)
 

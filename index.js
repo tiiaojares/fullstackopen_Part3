@@ -1,15 +1,28 @@
 
+//tehtävät 3.13 - 3.14
 
+
+require('dotenv').config()
 const express = require('express');
+const app = express();
+const Person = require('./models/person')
+
+//otetaan tietokantayhteys (Mongo) käyttöön
+const mongoose = require('mongoose')
+
+//morgan on yleinen middleware-kirjasto Node.js-ympäristössä, 
+//joka mahdollistaa HTTP-pyyntöjen lokitietojen tallentamisen.
 const morgan = require('morgan');
+
 //mahdollistaa että frontti voi käyttää backendin dataa
 //"npm install cors" backend repositoryssa
 const cors = require('cors');
 
-
-const app = express();
 app.use(express.static('build'));
 app.use(cors());
+
+// post menetelmää varten tarvitaan json-parser:
+app.use(express.json())
 
 // tehtävä 3.7 
 // tulostaa konsolille seuraavat tiedot:
@@ -31,32 +44,13 @@ morgan.token('info', function(req, res) {
 app.use(express.json())
 
 
-let persons = [
-    { 
-        id: 1,
-        name: "Arto Hellas", 
-        number: "040-123456"
-      },
-      { 
-        id: 2,
-        name: "Ada Lovelace", 
-        number: "39-44-5323523"
-      },
-      { 
-        id: 3,
-        name: "Dan Abramov", 
-        number: "12-43-234345"
-      },
-      { 
-        id: 4,
-        name: "Mary Poppendieck", 
-        number: "39-23-64231222222"
-      }
-]
-
+//haetaan data tietokannasta:
 app.get('/api/persons', (request, response) => {
+  Person.find({}).then(persons => {
     response.json(persons)
+  })
 })
+
 
 app.get('/info', (request, response) => {
   const number = persons.length;
@@ -70,36 +64,23 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(p => p.id === id)
-  if (person) {
-    response.send(
-      `<div> 
-      <p> name: ${person.name} </p>
-      <p> number: ${person.number} </p>
-    </div>`
-    )
-  } else {
-    response.status(404).end()
-  }
+  Person.findById(request.params.id).then(person => {
+    response.json(person)
+  })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
-  persons = persons.filter(p => p.id !== id)
+  Person.findById(request.params.id).then(person => {
+    person.deleteOne().then(() => {
+      response.status(204).end()
+    })
+  }) 
 
-  response.status(204).end()
 })
+  
 
-// post menetelmää varten tarvitaan json-parser:
-app.use(express.json())
-
-const generatedId = () => {
-  const id = Math.floor(Math.random() * 1000000)
-  return id;
-}
-
-app.post('/api/persons', ((request, response) => {
+app.post('/api/persons', (request, response) => {
   const body = request.body
 
   if ((!body.name) || (!body.number)) {
@@ -107,33 +88,31 @@ app.post('/api/persons', ((request, response) => {
       error: 'name or number missing'
     })
   }
+  const person = new Person({
+    name: body.name,
+    number: body.number
+  })
 
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
+})
+
+/*
   const nameAlreadyExists = name => {
     const names = persons.map(p => p.name)
     const findName = names.find(n => n === name)
     return findName
   }
 
+  
   if (nameAlreadyExists(body.name)) {
     return response.status(400).json({
       error: 'name must be unique'
     })
-  }
+  }*/
 
-  const person = {
-    id: generatedId(),
-    name: body.name,
-    number: body.number
-  }
-
-  persons = persons.concat(person)
-
-  response.json(person)
-}))
-
-
-
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`)
 })
