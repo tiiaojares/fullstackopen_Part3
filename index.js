@@ -1,5 +1,5 @@
 
-//tehtävät 3.15 - 3.18
+//tehtävä 3.19-3.21
 
 
 require('dotenv').config();
@@ -33,6 +33,8 @@ morgan.token('info', function(req, res) {
 
 // post menetelmää varten tarvitaan json-parser:
 app.use(express.json());
+
+
 
 
 //haetaan data tietokannasta:
@@ -82,7 +84,7 @@ app.delete('/api/persons/:id', (request, response) => {
 })
   
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
   if ((!body.name) || (!body.number)) {
@@ -98,6 +100,7 @@ app.post('/api/persons', (request, response) => {
   person.save().then(savedPerson => {
     response.json(savedPerson)
   })
+  .catch(error => next(error))
 })
 
 
@@ -115,17 +118,19 @@ app.put('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
-
 //lisätää poikkeuskäsittely Express error handler
 const errorHandler = (error, request, response, next) => {
   console.log(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({error: 'malformatted id'})
+  } else if (error.name === 'ValidationError' ) {
+    return response.status(400).json({error: error.message})
   }
-
+  
   next(error)
-} 
+}
+ 
 
 app.use(errorHandler);
 
