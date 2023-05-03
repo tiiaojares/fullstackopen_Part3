@@ -42,17 +42,22 @@ app.get('/api/persons', (request, response) => {
   })
 })
 
-
 app.get('/info', (request, response) => {
-  const number = persons.length;
-  const dateTime = new Date()
-  response.send(
-    `<div> 
-      <p> Phonebook has info for ${number} people </p>
-      ${dateTime}
-    </div>`
-  )
+  Person.find({})
+    .then(persons => {
+      const number = persons.length
+      const dateTime = new Date()
+      console.log("listalla henkilöitä: ", number)
+
+      response.send(
+        `<div> 
+          <p> Phonebook has info for ${number} people </p>
+          ${dateTime}
+        </div>`
+      )
+    })
 })
+
 
 app.get('/api/persons/:id', (request, response, next) => {
   Person.findById(request.params.id)
@@ -109,20 +114,6 @@ app.put('/api/persons/:id', (request, response, next) => {
     })
     .catch(error => next(error))
 })
-
-/*
-  const nameAlreadyExists = name => {
-    const names = persons.map(p => p.name)
-    const findName = names.find(n => n === name)
-    return findName
-  }
-
-  
-  if (nameAlreadyExists(body.name)) {
-    return response.status(400).json({
-      error: 'name must be unique'
-    })
-  }*/
 
 
 //lisätää poikkeuskäsittely Express error handler
