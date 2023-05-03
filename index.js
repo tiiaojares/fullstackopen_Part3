@@ -1,14 +1,14 @@
 
-//tehtävät 3.13 - 3.14
+//tehtävät 3.15 - 3.18
 
 
-require('dotenv').config()
+require('dotenv').config();
 const express = require('express');
 const app = express();
-const Person = require('./models/person')
+const Person = require('./models/person');
 
 //otetaan tietokantayhteys (Mongo) käyttöön
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 //morgan on yleinen middleware-kirjasto Node.js-ympäristössä, 
 //joka mahdollistaa HTTP-pyyntöjen lokitietojen tallentamisen.
@@ -22,17 +22,8 @@ app.use(express.static('build'));
 app.use(cors());
 
 // post menetelmää varten tarvitaan json-parser:
-app.use(express.json())
+app.use(express.json());
 
-// tehtävä 3.7 
-// tulostaa konsolille seuraavat tiedot:
-// :method :url :status :res[content-length] - :response-time ms
-// huom! installoitava "npm install morgan"
-
-//app.use(morgan('tiny'))
-
-
-// tehtävät 3.8: luodaan oma token
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :info'))
 
@@ -41,7 +32,7 @@ morgan.token('info', function(req, res) {
 });
 
 // post menetelmää varten tarvitaan json-parser:
-app.use(express.json())
+app.use(express.json());
 
 
 //haetaan data tietokannasta:
@@ -63,10 +54,16 @@ app.get('/info', (request, response) => {
   )
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  Person.findById(request.params.id).then(person => {
-    response.json(person)
-  })
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end() //404 not found
+      }
+    })
+    .catch(error => next(error)) // passataan error eteenpäin Expressille
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -98,6 +95,21 @@ app.post('/api/persons', (request, response) => {
   })
 })
 
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body;
+
+  const person = {
+    name: body.name,
+    number: body.number
+  }
+  Person.findByIdAndUpdate(request.params.id, person, {new: true})
+    .then(updatePerson => {
+      response.json(updatePerson)
+    })
+    .catch(error => next(error))
+})
+
 /*
   const nameAlreadyExists = name => {
     const names = persons.map(p => p.name)
@@ -111,6 +123,21 @@ app.post('/api/persons', (request, response) => {
       error: 'name must be unique'
     })
   }*/
+
+
+//lisätää poikkeuskäsittely Express error handler
+const errorHandler = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({error: 'malformatted id'})
+  }
+
+  next(error)
+} 
+
+app.use(errorHandler);
+
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
